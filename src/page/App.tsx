@@ -22,7 +22,8 @@ function App() {
   const chartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch('/data.json')
+      const dataUrl = `${import.meta.env.BASE_URL}data.json`;
+      fetch(dataUrl)
       .then(res => {
         if (!res.ok) {
           throw new Error('Failed to load data');
