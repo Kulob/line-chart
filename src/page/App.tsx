@@ -1,5 +1,5 @@
 import html2canvas from 'html2canvas';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Controls } from '../components/Controls';
 import { LineChart } from '../components/LineChart';
 import { VariationSelector } from '../components/VariationSelector';
@@ -22,29 +22,38 @@ function App() {
   const chartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-      const dataUrl = `${import.meta.env.BASE_URL}data.json`;
-      fetch(dataUrl)
-      .then(res => {
+    const feachData = async () => {
+      try {
+        const dataUrl = `${import.meta.env.BASE_URL}data.json`;
+        const res = await fetch(dataUrl)
         if (!res.ok) {
           throw new Error('Failed to load data');
         }
-        return res.json();
-      })
-      .then((data: ChartData) => {
+        const data = await res.json();
+      
         setChartData(data);
-        const defaultVariations = data.variations.slice(0, 2).map(el => el.id);
+        const defaultVariations = data.variations.slice(0, 2).map((el: { id: number; }) => el.id);
         setSelectedVariations(defaultVariations);
         setLoading(false);
-      })
-      .catch(err => {
-        setError(err.message);
-        setLoading(false);
-      });
+
+      } catch (err: unknown) {
+        const error = err as Error;
+         setError(error.message);
+         setLoading(false);
+      }
+      
+    }
+    feachData()
   }, []);
+
+   const processedData = useMemo(() => {
+    if (!chartData) return [];
+    return processChartData(chartData.data, selectedVariations, timeRange);
+  }, [chartData, selectedVariations, timeRange]);
+
 
   const handleExport = async () => {
     if (!chartRef.current) return;
-
     try {
       const canvas = await html2canvas(chartRef.current, {
         backgroundColor: theme === 'dark' ? '#111827' : '#ffffff',
@@ -61,14 +70,10 @@ function App() {
   };
 
   const handleZoom = () => {
-    if (!chartData) return;
-    const processedData = processChartData(chartData.data, selectedVariations, timeRange);
+    if (!processedData.length) return;
     const mid = Math.floor(processedData.length / 2);
     const zoomSize = Math.floor(processedData.length / 3);
-    setZoomDomain([
-      Math.max(0, mid - zoomSize),
-      Math.min(processedData.length - 1, mid + zoomSize)
-    ]);
+    setZoomDomain([Math.max(0, mid - zoomSize), Math.min(processedData.length - 1, mid + zoomSize)]);
   };
 
   const handleResetZoom = () => {
@@ -90,8 +95,6 @@ function App() {
       </div>
     );
   }
-
-  const processedData = processChartData(chartData.data, selectedVariations, timeRange);
 
   return (
     <div className={`${styles.app} ${theme === 'dark' ? styles.dark : ''}`}>

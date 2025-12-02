@@ -22,20 +22,19 @@ export const Controls = ({
   onExport,
   onZoom,
   onResetZoom,
+  lineStyle,
   isZoomed
 }: ControlsProps) => {
     const { theme, toggleTheme } = useThemeStore();
+    const isDark = theme === 'dark';
 
-    const handleToggle = () => {
-    toggleTheme();
-    const newTheme = theme === "light" ? "dark" : "light";
-    localStorage.setItem("theme", newTheme);
-  };
+  const darkClass = isDark ? styles.dark : '';
+
 
   return (
     <div className={styles.container}>
       <div className={styles.group}>
-        <label className={`${styles.label} ${theme === 'dark' ? styles.dark : ''}`}>
+        <label className={`${styles.label} ${darkClass}`}>
           Time Range:
         </label>
         <div className={styles.buttonGroup}>
@@ -51,11 +50,11 @@ export const Controls = ({
       </div>
 
       <div className={styles.group}>
-        <label className={`${styles.label} ${theme === 'dark' ? styles.dark : ''}`}>
+        <label className={`${styles.label} ${darkClass}`}>
           Line Style:
         </label>
         <select className={`${styles.select} ${theme === 'dark' ? styles.dark : ""}`}
-            value={timeRange}
+            value={lineStyle}
             onChange={(e) => onLineStyleChange(e.target.value as LineStyle)}>
           <option value="line">Line</option>
           <option value="smooth">Smooth</option>
@@ -66,7 +65,7 @@ export const Controls = ({
         {isZoomed ? (
           <button
             onClick={onResetZoom}
-            className={`${styles.iconButton} ${theme === 'dark' ? styles.dark : ''}`}
+            className={`${styles.iconButton} ${darkClass}`}
             title="Reset Zoom"
           >
             <ZoomOut size={18} />
@@ -74,7 +73,7 @@ export const Controls = ({
         ) : (
           <button
             onClick={onZoom}
-            className={`${styles.iconButton} ${theme === 'dark' ? styles.dark : ''}`}
+            className={`${styles.iconButton} ${darkClass}`}
             title="Zoom In"
           >
             <ZoomIn size={18} />
@@ -83,15 +82,15 @@ export const Controls = ({
 
         <button
           onClick={onExport}
-          className={`${styles.iconButton} ${theme === 'dark' ? styles.dark : ''}`}
+          className={`${styles.iconButton} ${darkClass}`}
           title="Export to PNG"
         >
           <Download size={18} />
         </button>
 
         <button
-          onClick={handleToggle}
-          className={`${styles.iconButton} ${theme === 'dark' ? styles.dark : ''}`}
+          onClick={toggleTheme}
+          className={`${styles.iconButton} ${darkClass}`}
           title="Toggle Theme"
         >
           {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
